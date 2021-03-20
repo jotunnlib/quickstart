@@ -13,6 +13,8 @@ namespace Quickstart
     // * You can use https://www.guidgenerator.com/                                     *
     // **********************************************************************************
 
+    // Visit https://jotunnlib.github.io/jotunnlib/ to learn more about modding with JotunnLib
+
     // Change the below line to match your mod.
     [BepInPlugin("com.bepinex.plugins.quickstart", "JotunnLib Quickstart Mod", "0.0.1")]
     [BepInDependency("com.bepinex.plugins.jotunnlib")]
