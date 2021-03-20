@@ -15,13 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Extract tag name
-        id: tag
-        uses: actions/github-script@0.2.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            return context.payload.ref.replace(/\/refs\/tags\//, '');
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
       - name: Setup DotNet
         uses: actions/setup-dotnet@v1
@@ -60,15 +56,15 @@ jobs:
         run: |
           export VALHEIM_INSTALL=~/VHINSTALL/
           xbuild ${{ env.PROJECT-NAME }}.sln /p:Configuration=Release
-          mv obj/Release/${{ env.PROJECT-NAME }}.dll ${{ env.PROJECT-NAME }}-${{ steps.tag.outputs.result }}.dll
+          mv obj/Release/${{ env.PROJECT-NAME }}.dll ${{ env.PROJECT-NAME }}-${{ steps.get_version.outputs.VERSION }}.dll
           xbuild ${{ env.PROJECT-NAME }}.sln /p:Configuration=Debug
-          mv obj/Debug/${{ env.PROJECT-NAME }}.dll ${{ env.PROJECT-NAME }}-DEBUG-${{ steps.tag.outputs.result }}.dll
+          mv obj/Debug/${{ env.PROJECT-NAME }}.dll ${{ env.PROJECT-NAME }}-DEBUG-${{ steps.get_version.outputs.VERSION }}.dll
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.PROJECT-NAME }}-${{ steps.tag.outputs.result }}.dll
-            ${{ env.PROJECT-NAME }}-DEBUG-${{ steps.tag.outputs.result }}.dll
+            ${{ env.PROJECT-NAME }}-${{ steps.get_version.outputs.VERSION }}.dll
+            ${{ env.PROJECT-NAME }}-DEBUG-${{ steps.get_version.outputs.VERSION }}.dll
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
