@@ -1,0 +1,62 @@
+name: Create Quickstart DLL on push to main
+variables:
+  - name: project-name
+    value: "Quickstart"
+
+"on":
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Get date
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Setup DotNet
+        uses: actions/setup-dotnet@v1
+
+      - name: Install SteamCMD
+        uses: CyberAndrii/setup-steamcmd@v1
+
+      # Install NuGet
+      - uses: nuget/setup-nuget@v1
+        name: Install NuGet
+
+      # Install NuGet dependencies
+      - name: Install NuGet dependencies
+        run: nuget restore ${{ variables.project-name }}.sln
+
+      # Get build commands
+      - name: Get build commands
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git mono-complete mono-xbuild unzip
+
+      # Prepare Valheim dependencies
+      - name: Prepare Valheim dependencies
+        run: |
+          wget -O bepinex.zip "https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.800/"
+          unzip bepinex.zip -d ~/BepInExRaw
+          steamcmd +login anonymous +force_install_dir ~/VHINSTALL +app_update 896660 validate +exit
+          mv ~/VHINSTALL/valheim_server_Data/ ~/VHINSTALL/valheim_Data/
+          mv ~/BepInExRaw/BepInExPack_Valheim/unstripped_corlib/* ~/VHINSTALL/valheim_Data/Managed/
+          mv ~/BepInExRaw/BepInExPack_Valheim/* ~/VHINSTALL/
+
+      # Build DLLs
+      - name: Build solution
+        run: |
+          export VALHEIM_INSTALL=~/VHINSTALL/
+          xbuild ${{ variables.project-name }}.sln /p:Configuration=Release
+
+      # Upload artifact
+      - uses: actions/upload-artifact@v2
+        with:
+          name: JotunnLib-${{ steps.date.outputs.date }}.dll
+          path: obj/Release/${{ variables.project-name }}.dll
