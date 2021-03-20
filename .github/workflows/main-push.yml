@@ -47,6 +47,12 @@ jobs:
           mv ~/VHINSTALL/valheim_server_Data/ ~/VHINSTALL/valheim_Data/
           mv ~/BepInExRaw/BepInExPack_Valheim/unstripped_corlib/* ~/VHINSTALL/valheim_Data/Managed/
           mv ~/BepInExRaw/BepInExPack_Valheim/* ~/VHINSTALL/
+          curl -s https://api.github.com/repos/jotunnlib/jotunnlib/releases/latest \
+          | grep "JotunnLib.dll" \
+          | cut -d : -f 2,3 \
+          | tr -d \" \
+          | wget -qi -
+          mv JotunnLib.dll ~/VHINSTALL/BepInEx/plugins/JotunnLib.dll
 
       # Build DLLs
       - name: Build solution
