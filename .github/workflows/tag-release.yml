@@ -3,16 +3,14 @@ on:
     tags:
       - "v*"
 
-variables:
-  - name: project-name
-    value: "Quickstart"
-
 name: Create Release
 
 jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
+    env:
+      PROJECT-NAME: "Quickstart"
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -37,7 +35,7 @@ jobs:
 
       # Install NuGet dependencies
       - name: Install NuGet dependencies
-        run: nuget restore ${{ variables.project-name }}.sln
+        run: nuget restore ${{ env.PROJECT-NAME }}.sln
 
       # Get build commands
       - name: Get build commands
@@ -59,16 +57,16 @@ jobs:
       - name: Build solution
         run: |
           export VALHEIM_INSTALL=~/VHINSTALL/
-          xbuild ${{ variables.project-name }}.sln /p:Configuration=Release
-          mv obj/Release/${{ variables.project-name }}.dll ${{ variables.project-name }}-${{ steps.tag.outputs.result }}.dll
-          xbuild ${{ variables.project-name }}.sln /p:Configuration=Debug
-          mv obj/Debug/${{ variables.project-name }}.dll ${{ variables.project-name }}-DEBUG-${{ steps.tag.outputs.result }}.dll
+          xbuild ${{ env.PROJECT-NAME }}.sln /p:Configuration=Release
+          mv obj/Release/${{ env.PROJECT-NAME }}.dll ${{ env.PROJECT-NAME }}-${{ steps.tag.outputs.result }}.dll
+          xbuild ${{ env.PROJECT-NAME }}.sln /p:Configuration=Debug
+          mv obj/Debug/${{ env.PROJECT-NAME }}.dll ${{ env.PROJECT-NAME }}-DEBUG-${{ steps.tag.outputs.result }}.dll
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ variables.project-name }}-${{ steps.tag.outputs.result }}.dll
-            ${{ variables.project-name }}-DEBUG-${{ steps.tag.outputs.result }}.dll
+            ${{ env.PROJECT-NAME }}-${{ steps.tag.outputs.result }}.dll
+            ${{ env.PROJECT-NAME }}-DEBUG-${{ steps.tag.outputs.result }}.dll
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
